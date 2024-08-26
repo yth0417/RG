@@ -8,18 +8,26 @@ class Player {
   }
 
   attack(monster) {
-    const damage = Math.floor(Math.random() * 21) + this.atk - 10;
-    // 플레이어의 공격
-    monster.hp -= damage;
-    return damage;
+    if (Math.random() < 0.8) {
+      const damage = Math.floor(Math.random() * 21) + this.atk - 10;
+      // 플레이어의 공격
+      monster.hp -= damage;
+      return damage;
+    } else {
+      return 0; // 공격 실패
+    }
   }
 
   doubleAttack(monster) {
     // 플레이어의 공격
     const damage1 = this.attack(monster);
     const damage2 = this.attack(monster);
-    const doubleDamage = damage1 + damage2;
-    return doubleDamage;
+    if (damage1 > 0 && damage2 > 0) {
+      return damage1 + damage2;
+    } else {
+      // 둘 중 하나라도 실패하면 둘 다 실패한다.
+      return 0;
+    }
   }
 
   block(monster) {
@@ -45,10 +53,14 @@ class Monster {
   }
 
   attack(player) {
-    // 몬스터의 공격
-    const monsterDamage = Math.floor(Math.random() * 21) + this.atk - 10;
-    player.hp -= monsterDamage;
-    return monsterDamage;
+    if (Math.random() < 0.6) {
+      // 몬스터의 공격
+      const monsterDamage = Math.floor(Math.random() * 21) + this.atk - 10;
+      player.hp -= monsterDamage;
+      return monsterDamage;
+    } else {
+      return 0;
+    }
   }
 }
 
@@ -75,7 +87,7 @@ const battle = async (stage, player, monster) => {
 
     console.log(
       chalk.green(
-        `\n1. 공격한다 2. 연속 공격한다. 3. 방어한다. 4. 도망친다.`,
+        `\n1. 공격한다.(80%) 2. 연속 공격한다.(64%) 3. 방어한다. 4. 도망친다.(40%)`,
       ),
     );
 
@@ -86,13 +98,21 @@ const battle = async (stage, player, monster) => {
     switch (choice) {
       case '1':
         const damage = player.attack(monster);
-        logs.push(`monster에게 ${damage}의 피해! monster 체력이 ${monster.hp}이 되었습니다.`);
+        if (damage > 0) {
+          logs.push(`monster에게 ${damage}의 피해! monster 체력이 ${monster.hp}이 되었습니다.`);
+        } else {
+          logs.push(chalk.red(`공격이 빗나갔습니다!`));
+        }
 
         if (monster.hp > 0) {
           const monsterDamage = monster.attack(player);
-          logs.push(chalk.red(`player에게 ${monsterDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
-          if (player.hp > 0) {
-            logs.push(chalk.green('플레이어가 피해를 견뎠습니다.'));
+          if (monsterDamage > 0) {
+            logs.push(chalk.red(`player에게 ${monsterDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
+            if (player.hp > 0) {
+              logs.push(chalk.green('플레이어가 피해를 견뎠습니다.'));
+            }
+          } else {
+            logs.push(chalk.red('몬스터의 공격이 빗나갔습니다!'));
           }
         } else {
           logs.push(chalk.green('몬스터를 물리쳤습니다!'));
@@ -101,13 +121,21 @@ const battle = async (stage, player, monster) => {
 
       case '2':
         const doubleDamage = player.doubleAttack(monster);
-        logs.push(`monster에게 ${doubleDamage}의 연속 피해! monster 체력이 ${monster.hp}이 되었습니다.`);
+        if (doubleDamage > 0) {
+          logs.push(`monster에게 ${doubleDamage}의 연속 피해! monster 체력이 ${monster.hp}이 되었습니다.`);
+        } else {
+          logs.push(chalk.red(`연속 공격이 빗나갔습니다!`));
+        }
 
         if (monster.hp > 0) {
           const monsterDamage = monster.attack(player);
-          logs.push(chalk.red(`player에게 ${monsterDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
-          if (player.hp > 0) {
-            logs.push(chalk.green('플레이어가 피해를 견뎠습니다.'));
+          if (monsterDamage > 0) {
+            logs.push(chalk.red(`player에게 ${monsterDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
+            if (player.hp > 0) {
+              logs.push(chalk.green('플레이어가 피해를 견뎠습니다.'));
+            }
+          } else {
+            logs.push(chalk.red('몬스터의 공격이 빗나갔습니다!'));
           }
         } else {
           logs.push(chalk.green('몬스터를 물리쳤습니다!'));
@@ -121,8 +149,13 @@ const battle = async (stage, player, monster) => {
         break;
 
       case '4':
-        console.log(chalk.yellow('플레이어가 도망쳤습니다!'));
-        return 'escaped';  // 도망치면 현재 배틀 종료 및 다음 스테이지로 이동
+        if (Math.random() < 0.4) {
+          console.log(chalk.yellow('플레이어가 도망쳤습니다!'));
+          return 'escaped';  // 도망치면 현재 배틀 종료 및 다음 스테이지로 이동
+        } else {
+          logs.push(chalk.red('도망에 실패했습니다!'));
+        }
+        break;
 
       default:
         logs.push(chalk.red('올바른 선택을 하세요.'));
