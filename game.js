@@ -14,7 +14,7 @@ class Player {
       const damage = Math.floor(Math.random() * 21) + this.atk - 10;
       // 플레이어의 공격
       monster.hp -= damage;
-      this.gauge = this.gauge + 20;
+      this.gauge = this.gauge + 10;
       return damage;
     } else {
       return 0; // 공격 실패
@@ -58,6 +58,7 @@ class Player {
     this.hp += monsterdamage - blockDamage;
     // monsterdamage의 데미지 수치만큼 player.hp에 추가하여 blockDamage 함수 내 이미 있는 몬스터 데미지를 상쇄.
     // 절반이 된 데미지만 들어가게 됨.
+    this.gauge = this.gauge + 25;
     return blockDamage;
   }
 
