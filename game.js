@@ -3,16 +3,18 @@ import readlineSync from 'readline-sync';
 
 class Player {
   constructor() {
-    this.hp = 100;
-    this.atk = 50;;
+    this.hp = 300;
+    this.atk = 20;;
+    this.gauge = 0;
   }
 
   attack(monster) {
-    if (Math.random() < 0.8) {
+    if (Math.random() < 0.9) {
       // 확률 추가
       const damage = Math.floor(Math.random() * 21) + this.atk - 10;
       // 플레이어의 공격
       monster.hp -= damage;
+      this.gauge = this.gauge + 20;
       return damage;
     } else {
       return 0; // 공격 실패
@@ -31,6 +33,21 @@ class Player {
       return 0;
     }
   }
+
+  specialAttack(monster) {
+    if (this.gauge >= 100) {
+      const damage = this.gauge + this.atk * 2;
+      // 특수 공격은 gauge + 일반 공격의 2배 데미지
+      monster.hp -= damage;
+      this.gauge = 0;
+      // 공격 후 게이지 초기화
+      return damage;
+    } else {
+      return 0;
+      // 게이지가 부족할 경우 공격 실패
+    }
+  }
+
 
   block(monster) {
     // 방어
@@ -78,8 +95,8 @@ function displayStatus(stage, player, monster) {
   console.log(
     // 스테이지, 플레이어, 몬스터 정보 표시
     chalk.cyanBright(`| Stage: ${stage} `) +
-    chalk.blueBright(`| Player Hp: ${player.hp} , Attack: ${player.atk}`,) +
-    chalk.redBright(`| Monster Hp: ${monster.hp} , Attack: ${monster.atk}`,),
+    chalk.blueBright(`| Player Hp: ${player.hp} , Atk: ${player.atk} , Gauge: ${player.gauge}`,) +
+    chalk.redBright(`| Monster Hp: ${monster.hp} , Atk: ${monster.atk}`,),
   );
   console.log(chalk.magentaBright(`=====================\n`));
 }
@@ -98,7 +115,7 @@ const battle = async (stage, player, monster) => {
     console.log(
       chalk.green(
         // 행동과 확률 표시
-        `\n1. 공격한다.(80%) 2. 연속 공격한다.(64%) 3. 방어한다. 4. 도망친다.(40%)`,
+        `\n1. 공격한다.(80%) 2. 연속 공격한다.(64%) 3. 특수 공격 (Gauge > 100) 4. 방어한다 5. 도망친다.(40%)`,
       ),
     );
 
@@ -154,13 +171,36 @@ const battle = async (stage, player, monster) => {
         }
         break;
 
-      case '3':
+        case '3':
+        const specialAttack = player.specialAttack(monster);
+        if (specialAttack > 0) {
+          logs.push(chalk.yellowBright(`게이지가 소모된 만큼 특수 공격! ${specialAttack}의 엄청난 피해! monster 체력이 ${monster.hp}이 되었습니다.`));
+        } else {
+          logs.push(chalk.red('게이지가 부족하여 특수 공격을 할수 없습니다!'));
+        }
+
+        if (monster.hp > 0) {
+          const monsterDamage = monster.attack(player);
+          if (monsterDamage > 0) {
+            logs.push(chalk.red(`player에게 ${monsterDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
+            if (player.hp > 0) {
+              logs.push(chalk.green('플레이어가 피해를 견뎠습니다.'));
+            }
+          } else {
+            logs.push(chalk.red('몬스터의 공격이 빗나갔습니다!'));
+          }
+        } else {
+          logs.push(chalk.green('몬스터를 물리쳤습니다!'));
+        }
+        break;
+
+      case '4':
         logs.push(chalk.blue('플레이어가 방어하여 몬스터의 공격 피해가 반감됩니다.'));
         const blockDamage = player.block(monster);
         logs.push(chalk.red(`player는 방어하여 ${blockDamage}의 피해! player 체력이 ${player.hp}이 되었습니다.`));
         break;
 
-      case '4':
+      case '5':
         if (Math.random() < 0.4) {
           console.log(chalk.yellow('플레이어가 도망쳤습니다!'));
           return 'escaped';  // 도망치면 현재 배틀 종료 및 다음 스테이지로 이동
