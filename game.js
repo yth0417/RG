@@ -3,12 +3,13 @@ import readlineSync from 'readline-sync';
 
 class Player {
   constructor() {
-    this.hp = 300;
+    this.hp = 100;
     this.atk = 50;;
   }
 
   attack(monster) {
     if (Math.random() < 0.8) {
+      // 확률 추가
       const damage = Math.floor(Math.random() * 21) + this.atk - 10;
       // 플레이어의 공격
       monster.hp -= damage;
@@ -19,9 +20,10 @@ class Player {
   }
 
   doubleAttack(monster) {
-    // 플레이어의 공격
+    // 플레이어의 연속 공격
     const damage1 = this.attack(monster);
     const damage2 = this.attack(monster);
+    // 공격마다 공격을 다르게 들어가게 만듬
     if (damage1 > 0 && damage2 > 0) {
       return damage1 + damage2;
     } else {
@@ -31,13 +33,19 @@ class Player {
   }
 
   block(monster) {
+    // 방어
     const monsterdamage = monster.attack(this);
+    // monster.attack(this)에 이미 있는 데미지를 상쇄시키기 위한 함수
     const blockDamage = Math.floor(monsterdamage / 2);
+    // 방어 데미지 절반으로 줄임
     this.hp += monsterdamage - blockDamage;
+    // monsterdamage의 데미지 수치만큼 player.hp에 추가하여 blockDamage 함수 내 이미 있는 몬스터 데미지를 상쇄.
+    // 절반이 된 데미지만 들어가게 됨.
     return blockDamage;
   }
 
   statUp() {
+    // 스테이지 진행도에 따라 랜덤하게 hp나 atk가 올라감.
     const hpHeal = Math.floor(Math.random() * 101) + 10;
     const atkUp = Math.floor(Math.random() * 6) + 5;
 
@@ -48,8 +56,9 @@ class Player {
 
 class Monster {
   constructor(stage) {
-    this.hp = 500 + stage * 20 + Math.floor(Math.random() * 31) + 1;
-    this.atk = 11 + stage * 5 + Math.floor(Math.random() * 11) + 1;
+    // 몬스터는 죽어서 다시 생겨나기에 player와 다른 방식으로 스테이지에 따른 랜덤 증가 함수를 만듬.
+    this.hp = 100 + stage * 20 + Math.floor(Math.random() * 31) + 1;
+    this.atk = 5 + stage * 5 + Math.floor(Math.random() * 6) + 1;
   }
 
   attack(player) {
@@ -67,6 +76,7 @@ class Monster {
 function displayStatus(stage, player, monster) {
   console.log(chalk.magentaBright(`\n=== Current Status ===`));
   console.log(
+    // 스테이지, 플레이어, 몬스터 정보 표시
     chalk.cyanBright(`| Stage: ${stage} `) +
     chalk.blueBright(`| Player Hp: ${player.hp} , Attack: ${player.atk}`,) +
     chalk.redBright(`| Monster Hp: ${monster.hp} , Attack: ${monster.atk}`,),
@@ -87,6 +97,7 @@ const battle = async (stage, player, monster) => {
 
     console.log(
       chalk.green(
+        // 행동과 확률 표시
         `\n1. 공격한다.(80%) 2. 연속 공격한다.(64%) 3. 방어한다. 4. 도망친다.(40%)`,
       ),
     );
@@ -95,6 +106,7 @@ const battle = async (stage, player, monster) => {
 
     logs.push(chalk.green(`${choice}를 선택하셨습니다.`));
 
+    //행동 선택을 위한 switch문 추가.
     switch (choice) {
       case '1':
         const damage = player.attack(monster);
