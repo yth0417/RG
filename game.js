@@ -3,7 +3,7 @@ import readlineSync from 'readline-sync';
 
 class Player {
   constructor() {
-    this.hp = 300;
+    this.hp = 10;
     this.atk = 20;;
     this.gauge = 0;
     this.escape = 0.2;
@@ -103,6 +103,14 @@ function displayStatus(stage, player, monster) {
   console.log(chalk.magentaBright(`=====================\n`));
 }
 
+const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const printLogs = (logs) => {
+  logs.forEach((log) => console.log(log));
+}
+
 const battle = async (stage, player, monster) => {
   let logs = [];
 
@@ -112,7 +120,7 @@ const battle = async (stage, player, monster) => {
     console.clear();
     displayStatus(stage, player, monster);
 
-    logs.forEach((log) => console.log(log));
+    printLogs(logs);
 
     console.log(
       chalk.green(
@@ -217,6 +225,23 @@ const battle = async (stage, player, monster) => {
         logs.push(chalk.red('올바른 선택을 하세요.'));
         break;
     }
+    if (player.hp <= 0) {
+      player.hp = 0;
+      console.clear();
+      displayStatus(stage, player, monster);
+      printLogs(logs);
+
+      console.log(chalk.red(`\nStage ${stage}에서 플레이어가 힘을 다하였습니다. 다시 도전하세요!`));
+      return;
+    } else if (monster.hp <= 0) {
+      monster.hp = 0;
+      console.clear();
+      displayStatus(stage, player, monster);
+      printLogs(logs);
+
+      console.log(chalk.green(`\nStage ${stage}를 Clear했습니다! 다음 Stage로 이동합니다.`));
+      return;
+    }
 
     // 플레이어의 선택에 따라 다음 행동 처리
   }
@@ -233,19 +258,20 @@ export async function startGame() {
 
     // 스테이지 클리어 및 게임 종료 조건
 
-    if (player.hp < 0) {
-      console.log(chalk.green(`\nStage ${stage}에서 플레이어가 힘을 다하였습니다. 다시 도전하세요!`));
+    if (battleEnd === 'escaped') {
+      console.log(chalk.yellow(`\nStage ${stage}에서 도망쳤습니다! 다음 스테이지로 이동합니다.`));
+    }
+
+    if (player.hp <= 0) {
+      console.log(chalk.red('\nGame Over!'));
+      break;
+    } else if (stage >= 10) {
+      console.log(chalk.red('\n축하합니다! 모든 스테이지를 클리어했습니다!'));
       break;
     }
 
-    if (battleEnd === 'escaped') {
-      console.log(chalk.yellow(`\nStage ${stage}에서 도망쳤습니다! 다음 스테이지로 이동합니다.\n`));
-    }
     player.statUp();
     stage++;
-  }
-
-  if (stage > 10) {
-    console.log(chalk.red('축하합니다! 모든 스테이지를 클리어했습니다!'));
+    await sleep(3000);
   }
 }
