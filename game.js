@@ -97,8 +97,8 @@ function displayStatus(stage, player, monster) {
   console.log(
     // 스테이지, 플레이어, 몬스터 정보 표시
     chalk.cyanBright(`| Stage: ${stage} `) +
-    chalk.blueBright(`| Player Hp: ${player.hp} , Atk: ${player.atk} , Gauge: ${player.gauge}`,) +
-    chalk.redBright(`| Monster Hp: ${monster.hp} , Atk: ${monster.atk}`,),
+    chalk.blueBright(`\n| Player Hp: ${player.hp} , Atk: ${player.atk} , Gauge: ${player.gauge}`,) +
+    chalk.redBright(`\n| Monster Hp: ${monster.hp} , Atk: ${monster.atk}`,),
   );
   console.log(chalk.magentaBright(`=====================\n`));
 }
