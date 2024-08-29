@@ -3,7 +3,7 @@ import readlineSync from 'readline-sync';
 
 class Player {
   constructor() {
-    this.hp = 10;
+    this.hp = 300;
     this.atk = 20;;
     this.gauge = 0;
     this.escape = 0.2;
@@ -125,7 +125,7 @@ const battle = async (stage, player, monster) => {
     console.log(
       chalk.green(
         // 행동과 확률 표시
-        `\n1. 공격한다.(80%) 2. 연속 공격한다.(64%) 3. 특수 공격 (Gauge >= 100) 4. 방어한다 5. 도망친다.(${Math.floor(player.escape * 100)}%)`,
+        `\n1. 공격한다.(80%) \n2. 연속 공격한다.(64%) \n3. 특수 공격 (Gauge >= 100) \n4. 방어한다 \n5. 도망친다.(${Math.floor(player.escape * 100)}%)`,
       ),
     );
 
@@ -212,7 +212,6 @@ const battle = async (stage, player, monster) => {
 
       case '5':
         if (Math.random() < player.escape) {
-          console.log(chalk.yellow('플레이어가 도망쳤습니다!'));
           player.escape = 0.2;
           return 'escaped';  // 도망치면 현재 배틀 종료 및 다음 스테이지로 이동
         } else {
